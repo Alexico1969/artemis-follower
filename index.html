@@ -1191,12 +1191,13 @@
   <div class="mission-dashboard" style="grid-template-columns: 1fr; width: 100%; max-width: 100%;">
     <div class="dashboard-map" style="padding:0; border:none; background: transparent; box-shadow:none; width:100%;">
       <div class="live-iframe-container" style="border:none; box-shadow:none; margin:0; width:100%;">
-        <iframe id="live-video-iframe" src="https://www.youtube.com/embed/6mtZ4mN-zhw?rel=0&autoplay=1&controls=1&mute=0" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        <iframe id="live-video-iframe" src="https://www.youtube.com/embed/6mtZ4mN-zhw?rel=0&autoplay=1&mute=1&controls=1&playsinline=1" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
       </div>
       <div class="trajectory-status-bar" style="justify-content: center; padding: 0.8rem 1.1rem; background: rgba(0,0,0,0.35);">
         <div class="trajectory-source" style="flex-direction: column; text-align: center; gap: 0.4rem;">
           <div style="font-family: 'Orbitron', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.12em;">Live data from YouTube stream</div>
           <a id="live-stream-url" href="https://www.youtube.com/watch?v=6mtZ4mN-zhw" target="_blank" rel="noopener" style="color: var(--accent); font-size: 0.8rem;">Open the current stream at YouTube</a>
+          <button id="unmute-stream" style="margin-top:0.45rem; font-family:'Orbitron'; font-size:0.70rem; color:#fff; background:#093457; border:1px solid var(--accent); border-radius:999px; padding:0.3rem 0.75rem; cursor:pointer;">Unmute Live Stream</button>
         </div>
       </div>
     </div>
@@ -2053,9 +2054,20 @@ const LIVE_SCREENSHOT_API = ''; // e.g. 'https://your-api.example.com/screenshot
     return;
   }
 
-  const embedUrl = `https://www.youtube.com/embed/${YOUTUBE_LIVE_VIDEO_ID}?rel=0&autoplay=1&controls=1&mute=0&playsinline=1`;
+  const embedUrl = `https://www.youtube.com/embed/${YOUTUBE_LIVE_VIDEO_ID}?rel=0&autoplay=1&controls=1&mute=1&playsinline=1`;
   if (iframe) iframe.src = embedUrl;
   if (link) link.href = `https://www.youtube.com/watch?v=${YOUTUBE_LIVE_VIDEO_ID}`;
+
+  const unmuteBtn = document.getElementById('unmute-stream');
+  if (unmuteBtn) {
+    unmuteBtn.addEventListener('click', () => {
+      if (iframe) {
+        iframe.src = `https://www.youtube.com/embed/${YOUTUBE_LIVE_VIDEO_ID}?rel=0&autoplay=1&controls=1&mute=0&playsinline=1`;
+      }
+      unmuteBtn.textContent = 'Live (unmuted)';
+      unmuteBtn.disabled = true;
+    });
+  }
 
 })();
 
