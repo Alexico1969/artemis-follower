@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Static Dev Server",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", ".", "--listen", "3002", "--no-clipboard"],
+      "port": 3002
+    },
+    {
+      "name": "Netlify Dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["netlify-cli", "dev", "--port", "8888"],
+      "port": 8888
+    }
+  ],
+  "netlify": {
+    "siteId": "326cb976-d673-48cc-9474-d91134ee4db6",
+    "siteName": "artemis-ii-tracker",
+    "productionUrl": "https://artemis-ii-tracker.netlify.app",
+    "adminUrl": "https://app.netlify.com/projects/artemis-ii-tracker"
+  }
+}
