@@ -844,15 +844,16 @@
     }
 
     .live-iframe-container {
-      margin-top: 1rem;
+      margin: 1rem auto 0;
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
       background: #010912;
-      width: 100%;
+      width: min(100%, 900px);
       max-width: 100%;
-      min-height: 480px;
-      height: min(75vh, 680px);
+      aspect-ratio: 16 / 9;
+      min-height: 360px;
+      height: auto;
     }
 
     .live-iframe-container iframe {
@@ -1204,7 +1205,6 @@
   <div class="hero-cta" style="animation: fade-in-up 1s 0.7s ease both;">
     <a href="#timeline" class="btn btn-primary">View Mission Timeline</a>
     <a href="#crew" class="btn btn-outline">Meet the Crew</a>
-    <a href="#" class="btn btn-outline" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Watch Live Stream</a>
   </div>
 
   <div class="scroll-hint">
@@ -2039,6 +2039,10 @@ function drawTrajectoryCanvas() {
 
 const YOUTUBE_LIVE_VIDEO_ID = '6mtZ4mN-zhw';
 
+// If you have a backend / screenshot API that can capture the current frame of the live stream,
+// set its URL here (best effort for actual current frame). Otherwise, falls back to YouTube thumbnail.
+const LIVE_SCREENSHOT_API = ''; // e.g. 'https://your-api.example.com/screenshot'
+
 (function initYouTubeLiveStream() {
   const iframe = document.getElementById('live-video-iframe');
   const link   = document.getElementById('live-stream-url');
@@ -2052,6 +2056,7 @@ const YOUTUBE_LIVE_VIDEO_ID = '6mtZ4mN-zhw';
   const embedUrl = `https://www.youtube.com/embed/${YOUTUBE_LIVE_VIDEO_ID}?rel=0&autoplay=1&controls=1&mute=0&playsinline=1`;
   if (iframe) iframe.src = embedUrl;
   if (link) link.href = `https://www.youtube.com/watch?v=${YOUTUBE_LIVE_VIDEO_ID}`;
+
 })();
 
 // ── Visitor Counter ───────────────────────────────────────
