@@ -863,6 +863,50 @@
       border: 0;
     }
 
+    .live-image-container {
+      margin-top: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #010912;
+      width: min(100%, 900px);
+      max-width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 360px;
+      height: auto;
+      position: relative;
+    }
+
+    .live-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
+    .live-image-container .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--muted);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .live-image-container .error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 1rem;
+    }
+
     /* ─── Footer ────────────────────────────────────────────── */
     footer {
       position: relative;
@@ -1190,14 +1234,19 @@
   <!-- ── Live Stream Priority View ── -->
   <div class="mission-dashboard" style="grid-template-columns: 1fr; width: 100%; max-width: 100%;">
     <div class="dashboard-map" style="padding:0; border:none; background: transparent; box-shadow:none; width:100%;">
-      <div class="live-iframe-container" style="border:none; box-shadow:none; margin:0; width:100%;">
-        <iframe id="live-video-iframe" src="https://www.youtube.com/embed/6mtZ4mN-zhw?rel=0&autoplay=1&mute=1&controls=1&playsinline=1" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      <div class="live-image-container">
+        <img id="live-mission-image" src="" alt="Artemis II Mission Live Frame" />
+        <div class="loading">Loading mission frame...</div>
+        <div class="error" style="display: none;">
+          <div style="font-family: 'Orbitron', monospace; font-size: 1rem; margin-bottom: 0.5rem;">⚠️ Frame Unavailable</div>
+          <div style="font-size: 0.8rem;">Unable to load mission frame from server.<br>Please check back later.</div>
+        </div>
       </div>
       <div class="trajectory-status-bar" style="justify-content: center; padding: 0.8rem 1.1rem; background: rgba(0,0,0,0.35);">
         <div class="trajectory-source" style="flex-direction: column; text-align: center; gap: 0.4rem;">
-          <div style="font-family: 'Orbitron', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.12em;">Live data from YouTube stream</div>
-          <a id="live-stream-url" href="https://www.youtube.com/watch?v=6mtZ4mN-zhw" target="_blank" rel="noopener" style="color: var(--accent); font-size: 0.8rem;">Open the current stream at YouTube</a>
-          <button id="unmute-stream" style="margin-top:0.45rem; font-family:'Orbitron'; font-size:0.70rem; color:#fff; background:#093457; border:1px solid var(--accent); border-radius:999px; padding:0.3rem 0.75rem; cursor:pointer;">Unmute Live Stream</button>
+          <div style="font-family: 'Orbitron', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.12em;">Live mission frame from Artemis II</div>
+          <div id="last-updated" style="color: var(--muted); font-size: 0.7rem;">Last updated: Loading...</div>
+          <button id="refresh-image" style="margin-top:0.45rem; font-family:'Orbitron'; font-size:0.70rem; color:#fff; background:#093457; border:1px solid var(--accent); border-radius:999px; padding:0.3rem 0.75rem; cursor:pointer;">Refresh Frame</button>
         </div>
       </div>
     </div>
@@ -2040,35 +2089,75 @@ function drawTrajectoryCanvas() {
 
 const YOUTUBE_LIVE_VIDEO_ID = '6mtZ4mN-zhw';
 
-// If you have a backend / screenshot API that can capture the current frame of the live stream,
-// set its URL here (best effort for actual current frame). Otherwise, falls back to YouTube thumbnail.
-const LIVE_SCREENSHOT_API = ''; // e.g. 'https://your-api.example.com/screenshot'
+// Mission frame image URL from VPS
+const MISSION_FRAME_URL = 'http://178.104.95.241:8080/artemis/frame.jpg';
 
-(function initYouTubeLiveStream() {
-  const iframe = document.getElementById('live-video-iframe');
-  const link   = document.getElementById('live-stream-url');
-  const section = document.getElementById('live-stream-section');
+(function initMissionFrame() {
+  const img = document.getElementById('live-mission-image');
+  const loading = document.querySelector('.live-image-container .loading');
+  const errorDiv = document.querySelector('.live-image-container .error');
+  const lastUpdated = document.getElementById('last-updated');
+  const refreshBtn = document.getElementById('refresh-image');
 
-  if (!YOUTUBE_LIVE_VIDEO_ID || YOUTUBE_LIVE_VIDEO_ID === 'REPLACE_WITH_VIDEO_ID') {
-    if (section) section.style.display = 'none';
-    return;
-  }
+  function updateImage() {
+    if (!img) return;
 
-  const embedUrl = `https://www.youtube.com/embed/${YOUTUBE_LIVE_VIDEO_ID}?rel=0&autoplay=1&controls=1&mute=1&playsinline=1`;
-  if (iframe) iframe.src = embedUrl;
-  if (link) link.href = `https://www.youtube.com/watch?v=${YOUTUBE_LIVE_VIDEO_ID}`;
+    // Show loading state
+    if (loading) loading.style.display = 'block';
+    if (errorDiv) errorDiv.style.display = 'none';
+    img.style.display = 'none';
 
-  const unmuteBtn = document.getElementById('unmute-stream');
-  if (unmuteBtn) {
-    unmuteBtn.addEventListener('click', () => {
-      if (iframe) {
-        iframe.src = `https://www.youtube.com/embed/${YOUTUBE_LIVE_VIDEO_ID}?rel=0&autoplay=1&controls=1&mute=0&playsinline=1`;
+    // Set image source with cache busting
+    const timestamp = Date.now();
+    img.src = `${MISSION_FRAME_URL}?t=${timestamp}`;
+
+    // Handle successful load
+    img.onload = function() {
+      if (loading) loading.style.display = 'none';
+      if (errorDiv) errorDiv.style.display = 'none';
+      img.style.display = 'block';
+
+      // Update last updated time
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (lastUpdated) {
+        lastUpdated.textContent = `Last updated: ${timeString}`;
       }
-      unmuteBtn.textContent = 'Live (unmuted)';
-      unmuteBtn.disabled = true;
-    });
+    };
+
+    // Handle load error
+    img.onerror = function() {
+      if (loading) loading.style.display = 'none';
+      img.style.display = 'none';
+
+      if (!errorDiv) {
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error';
+        errorElement.innerHTML = `
+          <div style="font-family: 'Orbitron', monospace; font-size: 1rem; margin-bottom: 0.5rem;">⚠️ Frame Unavailable</div>
+          <div style="font-size: 0.8rem;">Unable to load mission frame from server.<br>Please check back later.</div>
+        `;
+        img.parentNode.appendChild(errorElement);
+      } else {
+        errorDiv.style.display = 'block';
+      }
+
+      if (lastUpdated) {
+        lastUpdated.textContent = 'Last updated: Error loading frame';
+      }
+    };
   }
 
+  // Initial load
+  updateImage();
+
+  // Manual refresh button
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', updateImage);
+  }
+
+  // Auto-refresh every 60 minutes (3600000 milliseconds)
+  setInterval(updateImage, 60 * 60 * 1000);
 })();
 
 // ── Visitor Counter ───────────────────────────────────────
