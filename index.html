@@ -2089,8 +2089,8 @@ function drawTrajectoryCanvas() {
 
 const YOUTUBE_LIVE_VIDEO_ID = '6mtZ4mN-zhw';
 
-// Mission frame image URL from VPS
-const MISSION_FRAME_URL = 'http://178.104.95.241:8080/artemis/frame.jpg';
+// Mission frame image URL from Netlify function (proxies VPS image)
+const MISSION_FRAME_URL = '/.netlify/functions/artemis-frame';
 
 (function initMissionFrame() {
   const img = document.getElementById('live-mission-image');
@@ -2107,7 +2107,7 @@ const MISSION_FRAME_URL = 'http://178.104.95.241:8080/artemis/frame.jpg';
     if (errorDiv) errorDiv.style.display = 'none';
     img.style.display = 'none';
 
-    // Set image source with cache busting
+    // Set image source with cache busting (Netlify function handles the actual image fetching)
     const timestamp = Date.now();
     img.src = `${MISSION_FRAME_URL}?t=${timestamp}`;
 
