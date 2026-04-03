@@ -1,5 +1,3 @@
-const fetch = require('node-fetch');
-
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
@@ -34,7 +32,8 @@ exports.handler = async (event, context) => {
     }
 
     // Get the image buffer
-    const imageBuffer = await response.buffer();
+    const arrayBuffer = await response.arrayBuffer();
+    const imageBuffer = Buffer.from(arrayBuffer);
 
     // Return the image with proper headers
     return {
