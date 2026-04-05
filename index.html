@@ -2164,7 +2164,7 @@ const MISSION_FRAME_URL = '/.netlify/functions/artemis-frame';
 (async function () {
   const el = document.getElementById('visitor-count');
   try {
-    const res  = await fetch('https://pageview.win/hit?id=artemis-ii-tracker');
+    const res  = await fetch('https://api.counterapi.dev/v1/artemis-ii/visitors/up');
     const data = await res.json();
     el.textContent = Number(data.count).toLocaleString();
   } catch (_) {
